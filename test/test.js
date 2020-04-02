@@ -1,5 +1,6 @@
 const test = require('ava');
 const sinon = require('sinon');
+const sandboxedModule = require('sandboxed-module');
 const axios = require('axios');
 
 const AsyncArrays = require('../index');
@@ -113,5 +114,30 @@ test('asyncReduce can run iteration with an http fetch promise', t => {
     return AsyncArrays.asyncReduce(array, iterator, 0)
         .then(asyncMapped => {
             t.deepEqual(14, asyncMapped);
+        });
+});
+
+test('asyncMap can be set to not run all iterations at the same time', t => {
+    const asyncReduceSpy = sinon.spy(AsyncArrays.asyncReduce);
+    const sandboxedAsyncMap = sandboxedModule.require('../src/asyncMap', {
+        requires: {
+            './asyncReduce': asyncReduceSpy
+        },
+    });
+
+    const array = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+    const iterator = (item) => {
+        return axios('http://www.mocky.io/v2/5e84bbf23000008e0a97abbe')
+            .then((response) => response.data)
+            .then(({number}) => item + number);
+    };
+
+    return sandboxedAsyncMap(array, iterator, 2)
+        .then(asyncMapped => {
+            t.true(asyncReduceSpy.calledOnce);
+            t.deepEqual(asyncReduceSpy.args[0][0], [[1, 2], [3,4], [5, 6], [7,8], [9, 10]]);
+
+            t.deepEqual([2, 3, 4, 5, 6, 7, 8, 9, 10, 11], asyncMapped);
         });
 });
