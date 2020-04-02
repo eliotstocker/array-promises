@@ -1,7 +1,7 @@
 {
   "name": "asyncarrays",
   "version": "1.0.0",
-  "description": "",
+  "description": "A small array utility functions to create asynchronous versions of common array functions",
   "main": "index.js",
   "directories": {
     "test": "test"
@@ -10,8 +10,8 @@
     "test": "ava -v",
     "build": "webpack"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Eliot Stocker",
+  "license": "MIT",
   "devDependencies": {
     "@babel/cli": "^7.8.4",
     "@babel/core": "^7.9.0",
