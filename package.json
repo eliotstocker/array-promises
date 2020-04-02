@@ -1,5 +1,5 @@
 {
-  "name": "asyncarrays",
+  "name": "array-promises",
   "version": "1.0.0",
   "description": "A small array utility functions to create asynchronous versions of common array functions",
   "main": "index.js",
