@@ -1,4 +1,4 @@
-# Asynchronous Array Functions
+# Asynchronous Array Functions | array-promises
 
 A small array utility functions to create asynchronous versions of common array functions
 
@@ -9,7 +9,7 @@ A small array utility functions to create asynchronous versions of common array 
 
 ## Usages
 
-you can use the functions directly from the package ie `AsyncArrays.asyncMap(array, iterator);`
+you can use the functions directly from the package ie `arrayPromises.asyncMap(array, iterator);`
 or you can use the provided [apply](#apply) method to add asyncMap and asyncReduce to the Array class
 
 ### apply
@@ -19,6 +19,18 @@ and asyncReduce to the standard Array functions.
 
 you may also provide a class you wish to add these functions to, please not that internally they will still use array 
 map and reduce so a map and reduce compatible function will need to exist on any class that you apply to.
+
+#### Example
+```js
+//node require
+const {apply} = require('array-promises');
+apply();
+
+//Array objects crated after running apply will now have asyncMap and asyncReduce
+const array = [1, 2, 3, 4];
+console.log(typeof array.asyncMap); //will log function
+console.log(typeof array.asyncReduce); //will log function
+```
 
 ### asyncMap
 
