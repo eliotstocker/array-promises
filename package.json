@@ -1,6 +1,6 @@
 {
   "name": "array-promises",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A small array utility functions to create asynchronous versions of common array functions",
   "main": "index.js",
   "directories": {
