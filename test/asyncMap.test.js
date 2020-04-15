@@ -1,5 +1,6 @@
 const test = require('ava');
 const sinon = require('sinon');
+const nycTransformer = require('./nycTransformer');
 const sandboxedModule = require('sandboxed-module');
 const axios = require('axios');
 
@@ -12,21 +13,7 @@ test('apply adds asyncMap to array prototype', t => {
 
     const instance = new ArrayStub();
 
-    t.is(instance.asyncMap.toString(), function(iterator, maxInFlight) {
-        return asyncMap(this, iterator, maxInFlight);
-    }.toString());
-});
-
-test('apply adds asyncReduce to array prototype', t => {
-    const ArrayStub = sinon.stub();
-
-    ArrayPromises.apply(ArrayStub);
-
-    const instance = new ArrayStub();
-
-    t.is(instance.asyncReduce.toString(), function(iterator, accumulator) {
-        return asyncReduce(this, iterator, accumulator);
-    }.toString());
+    t.is(instance.asyncMap.toString().split('{', 1)[0].replace(/\s/g,''), 'function(iterator,maxInFlight)');
 });
 
 test('asyncMap can produce the same results as map given the same input (wrapped in a promise)', t => {
@@ -40,19 +27,6 @@ test('asyncMap can produce the same results as map given the same input (wrapped
         .then(asyncMapped => {
             t.deepEqual(mapped, asyncMapped);
         })
-});
-
-test('asyncReduce can produce the same results as reduce given the same input (wrapped in a promise)', t => {
-    const array = [1, 2, 3, 4];
-
-    const iterator = (acc, item) => acc + item;
-
-    const reduced = array.reduce(iterator, 0);
-
-    return ArrayPromises.asyncReduce(array, iterator, 0)
-        .then(asyncReduced => {
-            t.is(reduced, asyncReduced);
-        });
 });
 
 test('asyncMap can run iteration with an async function', t => {
@@ -71,22 +45,6 @@ test('asyncMap can run iteration with an async function', t => {
         });
 });
 
-test('asyncReduce can run iteration with an async function', t => {
-    const fakeAsync = sinon.stub().resolvesArg(0);
-
-    const array = [1, 2, 3, 4];
-
-    const iterator = async (acc, item) => {
-        const val = await fakeAsync(item);
-        return val + acc;
-    };
-
-    return ArrayPromises.asyncReduce(array, iterator, 0)
-        .then(asyncReduced => {
-            t.is(10, asyncReduced);
-        });
-});
-
 test('asyncMap can run iteration with an http fetch promise', t => {
     const array = [1, 2, 3, 4];
 
@@ -102,27 +60,14 @@ test('asyncMap can run iteration with an http fetch promise', t => {
         });
 });
 
-test('asyncReduce can run iteration with an http fetch promise', t => {
-    const array = [1, 2, 3, 4];
-
-    const iterator = (acc, item) => {
-        return axios('http://www.mocky.io/v2/5e84bbf23000008e0a97abbe')
-            .then((response) => response.data)
-            .then(({number}) => acc + item + number);
-    };
-
-    return ArrayPromises.asyncReduce(array, iterator, 0)
-        .then(asyncMapped => {
-            t.deepEqual(14, asyncMapped);
-        });
-});
-
 test('asyncMap can be set to not run all iterations at the same time', t => {
     const asyncReduceSpy = sinon.spy(ArrayPromises.asyncReduce);
     const sandboxedAsyncMap = sandboxedModule.require('../src/asyncMap', {
+        singleOnly: true,
         requires: {
             './asyncReduce': asyncReduceSpy
         },
+        sourceTransformers: nycTransformer
     });
 
     const array = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
